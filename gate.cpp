@@ -1,47 +1,68 @@
 
-int myobjective=0;
-bool objvalue=0;
-
-enum
+enum    //boolean value
 {
-    nand_g,         /* 0 */
-    not_g          /* 1 */
+    zero,
+    one,
+    unknown
 };
 
-bool ctrl_val(int gate_type)
+int and2(int in1, int in2)
 {
-    bool ctrl_v;
-    if(gate_type==nand_g){
-        ctrl_v = false;
+    int result;
+    if(in1==zero || in2==zero){
+        result = zero;
     }
-    else if(gate_type==not_g){
-        ctrl_v =
+    else if(in1==one && in2==one){
+        result = one;
     }
-
+    else{
+        result = unknown;
+    }
+    return result;
 }
 
-void gateLevelCkt::getobjective(int gate, bool value)
+int inv(int in)
 {
-    objvalue=1;
-
-    if()
-    {
-        myobjective=gate;
-        objvalue=!value;
-        return;
+    int result;
+    if(in==zero){
+        result = one;
     }
-
-    int nextGate=D_frontier[0];
-    for(int i=0;i<fanin[nextGate];i++)
-    {
-        nextGate=D_frontier[0];
-         = ctrl_val();
-        if((value1[inlist[nextGate][i]] && !value2[inlist[nextGate][i]]) || (!value1[inlist[nextGate][i]] && value2[inlist[nextGate][i]]))
-        {
-            myobjective=inlist[nextGate][i];
-        }
+    else if(in==one){
+        result = zero;
     }
-    return;
-
+    else{
+        result = unknown;
+    }
+    return result;
 }
+
+int nand2(int in1, int in2)
+{
+    int result;
+    result = inv(and2(in1,in2));
+    return result;
+}
+
+int nand3(int in1, int in2, int in3)
+{
+    int result;
+    result = and2(in1,in2);
+    result = inv(and2(result,in3));
+    return result;
+}
+
+int nand6(int in1, int in2, int in3, int in4, int in5, int in6)
+{
+    int tmp1,tmp2,tmp3,result;
+    tmp1 = and2(in1,in2);
+    tmp2 = and2(in3,in4);
+    tmp3 = and2(in5,in5);
+    result = nand3(tmp1,tmp2,tmp3);
+    return result;
+}
+
+
+
+
+
 
