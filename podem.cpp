@@ -63,9 +63,9 @@ class ckt
         void backtrace();
         int inverse(int, int, int);
         int faultsim(int);
+        void display(int);
 
         int numgates;           // total number of gates
-        int numpri;             // number of PIs
         int *node;              // fault value of node
         int *free;              // correct value of node
         int **fanin;            // number of fanin, fanouts
@@ -78,7 +78,6 @@ class ckt
 ckt::ckt()
 {
     numgates = NGATE+1;
-    numpri = PI;
 
     node = (int*)malloc(sizeof(int)*NNODE);
     for(int idx=0; idx<NNODE; idx++){
@@ -360,33 +359,23 @@ int ckt::faultsim(int fault)
 //    }
 //    printf("\n");
     /// I/O only
-    printf("\nnode ");
+    printf("input  ");
     for(int idx=1; idx<PI+1; idx++){
         printf("%c ",idx+96);
     }
-    printf("z ");
-    printf("\n     ");
+    printf("\n       ");
     for(int idx=1; idx<PI+1; idx++){
-        if(node[idx]==one){
-            printf("1 ");
-        }
-        else if(node[idx]==zero){
-            printf("0 ");
-        }
-        else if(node[idx]==unknown){
-            printf("X ");
-        }
+        display(node[idx]);
+        printf(" ");
     }
-    if(node[n]==one){
-            printf("1 ");
-    }
-    else if(node[n]==zero){
-        printf("0 ");
-    }
-    else if(node[n]==unknown){
-        printf("X ");
-    }
-    printf("\n");
+    printf("\n\noutput ");
+    printf("z/zf\n");
+    printf("       ");
+    display(free[n]);
+    printf("/");
+    display(node[n]);
+    printf("\n-------------------\n");
+
     if(node[n]!=free[n] && node[n]!=unknown && free[n]!=unknown){
         return 1;
     }
@@ -396,16 +385,29 @@ int ckt::faultsim(int fault)
 
 }
 
+void ckt::display(int value)
+{
+    if(value==zero){
+        printf("0");
+    }
+    else if(value==one){
+        printf("1");
+    }
+    else{
+        printf("X");
+    }
+}
+
 int main()
 {
     ckt circuit = ckt();
     ckt circuit2 = ckt();
 
     ///a2 s-a-1
-    printf("--------a2 s-a-1--------\n");
+    printf("========a2 s-a-1========\n");
     circuit.podem(1);
 
-    printf("--------d2 s-a-0--------\n");
+    printf("========d2 s-a-0========\n");
     ///d2 s-a-0
     circuit2.podem(2);
     return 0;
