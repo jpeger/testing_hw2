@@ -12,6 +12,10 @@
 
 using namespace std;
 
+int arr_v[6]={unknown};
+int arr_n[6]={unknown};
+int cnt=0;
+
 enum //node
 {
     x,  //0
@@ -57,9 +61,7 @@ class ckt
         int podem(int);
         void objective(int, int);
         void backtrace();
-        int inverse(int, int);
-        //void findD();
-        //int goodsim(int);
+        int inverse(int, int, int);
         int faultsim(int);
 
         int numgates;           // total number of gates
@@ -148,10 +150,10 @@ void ckt::objective(int point, int value)
         obj_n = a;
         obj_v = zero;
     }
-//    else if(point==d){
-//        node[d] = true;
-//        return;
-//    }
+    else if(point==d && node[point]==unknown){
+        obj_n = d;
+        obj_v = one;
+    }
     else{
         for(int idx=1; idx<NNODE; idx++){
             if(D_ftr[idx]==1 && (node[idx]==unknown || free[idx]==unknown)){
@@ -169,245 +171,110 @@ void ckt::backtrace()
         for(int jdx=0; jdx<MAXIN; jdx++){
             if(fanout[idx]==obj_n && node[fanin[idx][jdx]]==unknown){
                 obj_n = fanin[idx][jdx];
-                obj_v = inverse(idx,obj_v);
+                //cout << "backtrace::node:"<< obj_n<<endl;
+                obj_v = inverse(idx,obj_n,obj_v);
+                if(obj_n > f){
+                    idx=0;
+                    jdx=0;
+                }
             }
         }
     }
 }
 
-int ckt::inverse(int gate, int value)
+int ckt::inverse(int gate, int point, int value)
 {
     int result;
     if(gate>0 && gate<9){
         if(value==one){
-//            for(int idx=0; idx<MAXIN; idx++){
-//                if(free[fanin[gate][idx]]==zero)
-//                node[fanin[gate][idx]];
-//                free[fanin[gate][idx]];
-//                result = one;
-//            }
-//        }
-//        else if(value==zero){
+            for(int idx=0; idx<MAXIN; idx++){
+                if(free[fanin[gate][idx]]!=node[fanin[gate][idx]] || free[fanout[gate]]!=node[fanout[gate]]){
+                    result = one;
+                    //cout << 1<<endl;
+                    return result;
+                }
+            }
+            if(fanin[gate][0]==d){
+                result = one;
+                return result;
+            }
+            for(int idx=0; idx<MAXIN; idx++){
+                for(int jdx=0; jdx<MAXIN; jdx++){
+                    if( idx!=jdx && fanin[gate][idx]!=x && fanin[gate][jdx]!=x){
+                        if(node[fanin[gate][idx]]==one || node[fanin[gate][jdx]]==one){
+                            result = zero;
+                            //cout << 2<<endl;
+                            return result;
+                        }
+                    }
+                }
+            }
             result = one;
+            //cout << 3<<endl;
+            return result;
+        }
+        else if(value==zero){
+            result = one;
+            //cout << 4<<endl;
+            return result;
         }
     }
     else if(gate>8 && gate<12){
         if(value==one){
             result = zero;
+            //cout << 5<<endl;
+            return result;
         }
         else if(value==zero){
             result = one;
+            //cout << 6<<endl;
+            return result;
         }
     }
-    return result;
+
 }
 
 int ckt::podem(int fault)
 {
-    if(faultsim(f)){
+    if(faultsim(fault)==1){
         return 1;
     }
+    else if(node[a]!=unknown && node[b]!=unknown && node[c]!=unknown
+        && node[d]!=unknown && node[e]!=unknown && node[f]!=unknown){
+        return 0;
+    }
     /** algo start **/
-/**
-    objective(a,0);   //FA
-    backtrace();
-    node[obj_n] = obj_v;
-    free[obj_n] = obj_v;
-    faultsim(1);
 
-    printf("obj_n:%c\nobj_v:%d\n",obj_n+96,obj_v);
-    printf("D_frontier: ");
-    for(int idx=1; idx<NNODE; idx++){
-        if(D_ftr[idx]==1){
-            printf("%c, ",idx+96);
-        }
-    }
-    printf("\n");
-///
-    objective(a,0);   //FA
-    backtrace();
-    node[obj_n] = obj_v;
-    free[obj_n] = obj_v;
-    faultsim(1);
-
-    printf("obj_n:%c\nobj_v:%d\n",obj_n+96,obj_v);
-    printf("D_frontier: ");
-    for(int idx=1; idx<NNODE; idx++){
-        if(D_ftr[idx]==1){
-            printf("%c, ",idx+96);
-        }
-    }
-    printf("\n");
-///
-    objective(a,0);   //FA
-    backtrace();
-    node[obj_n] = obj_v;
-    free[obj_n] = obj_v;
-    faultsim(1);
-
-    printf("obj_n:%c\nobj_v:%d\n",obj_n+96,obj_v);
-    printf("D_frontier: ");
-    for(int idx=1; idx<NNODE; idx++){
-        if(D_ftr[idx]==1){
-            printf("%c, ",idx+96);
-        }
-    }
-    printf("\n");
-///
-    objective(a,0);   //FA
-    backtrace();
-    node[obj_n] = obj_v;
-    free[obj_n] = obj_v;
-    faultsim(1);
-
-    printf("obj_n:%c\nobj_v:%d\n",obj_n+96,obj_v);
-    printf("D_frontier: ");
-    for(int idx=1; idx<NNODE; idx++){
-        if(D_ftr[idx]==1){
-            printf("%c, ",idx+96);
-        }
-    }
-    printf("\n");
-///
-    objective(a,0);   //FA
-    backtrace();
-    node[obj_n] = obj_v;
-    free[obj_n] = obj_v;
-    faultsim(1);
-
-    printf("obj_n:%c\nobj_v:%d\n",obj_n+96,obj_v);
-    printf("D_frontier: ");
-    for(int idx=1; idx<NNODE; idx++){
-        if(D_ftr[idx]==1){
-            printf("%c, ",idx+96);
-        }
-    }
-    printf("\n");
-///
-    return 0;
-    /** algo end**/
     if(fault==1){
         objective(a,0);   //FA
     }
     else if(fault==2){
-
+        objective(d,1);
     }
     backtrace();
     node[obj_n] = obj_v;
     free[obj_n] = obj_v;
-    if(podem()==1) return 1;
 
+    arr_v[cnt] = obj_v;
+    arr_n[cnt] = obj_n;
+    cnt++;
+    if(podem(fault)==1) return 1;
+
+    cnt--;
+    obj_v = arr_v[cnt];
+    obj_n = arr_n[cnt];
     if(obj_v==zero)
         obj_v=one;
     else if(obj_v==one)
         obj_v = zero;
 
     node[obj_n] = obj_v;
-    if(podem()==1) return 1;
+    free[obj_n] = obj_v;
+    if(podem(fault)==1) return 1;
 
+    /** algo end**/
     return 0;
 }
-
-//int ckt::goodsim(int fault)
-//{
-//    ///fault sim
-//    int tmp[NNODE]={unknown};
-//    tmp[a] = node[a];
-//    tmp[b] = node[b];
-//    tmp[c] = node[c];
-//    tmp[d] = node[d];
-//    tmp[e] = node[e];
-//    tmp[f] = node[f];
-//    if(fault==1 || fault==3){
-//        tmp[g] = nand3(one,node[b],node[c]);   //g1 a2 s-a-1
-//    }
-//    else{
-//        tmp[g] = nand3(node[a],node[b],node[c]);   //g1
-//    }
-//    tmp[o] = inv(node[d]); //g9
-//    tmp[p] = inv(node[e]); //g10
-//    tmp[q] = inv(node[f]); //g11
-//    tmp[h] = nand2(node[a],node[o]);   //g2
-//    tmp[i] = nand2(node[d],node[g]);   //g3
-//    tmp[j] = nand2(node[b],node[p]);   //g4
-//    tmp[k] = nand2(node[e],node[g]);   //g5
-//    tmp[l] = nand2(node[c],node[q]);   //g6
-//    tmp[m] = nand2(node[f],node[g]);   //g7
-//    tmp[n] = nand6(node[h],node[i],node[j],node[k],node[l],node[m]);   //g8
-//
-//    ///good sim
-//    node[g] = nand3(node[a],node[b],node[c]);   //g1
-//    node[o] = inv(node[d]); //g9
-//    node[p] = inv(node[e]); //g10
-//    node[q] = inv(node[f]); //g11
-//    node[h] = nand2(node[a],node[o]);   //g2
-//    node[i] = nand2(node[d],node[g]);   //g3
-//    node[j] = nand2(node[b],node[p]);   //g4
-//    node[k] = nand2(node[e],node[g]);   //g5
-//    node[l] = nand2(node[c],node[q]);   //g6
-//    node[m] = nand2(node[f],node[g]);   //g7
-//    node[n] = nand6(node[h],node[i],node[j],node[k],node[l],node[m]);   //g8
-//
-//    for(int idx=1; idx<NNODE; idx++){
-//        if(node[idx]!=tmp[idx] &&
-//           (node[idx]==unknown || tmp[idx]==unknown)){
-//            D_ftr[idx]=1;
-//        }
-//        else{
-//            D_ftr[idx]=0;
-//        }
-//    }
-
-    ///details
-//    printf("======good sim======\nnode ");
-//    for(int idx=1; idx<NNODE; idx++){
-//        printf("%c ",idx+96);
-//    }
-//    printf("\n     ");
-//    for(int idx=1; idx<NNODE; idx++){
-//        if(node[idx]==one){
-//            printf("1 ");
-//        }
-//        else if(node[idx]==zero){
-//            printf("0 ");
-//        }
-//        else if(node[idx]==unknown){
-//            printf("X ");
-//        }
-//    }
-//    printf("\n");
-
-    /// I/O only
-//    printf("\nnode ");
-//    for(int idx=1; idx<PI+1; idx++){
-//        printf("%c ",idx+96);
-//    }
-//    printf("z ");
-//    printf("\n     ");
-//    for(int idx=1; idx<PI+1; idx++){
-//        if(node[idx]==one){
-//            printf("1 ");
-//        }
-//        else if(node[idx]==zero){
-//            printf("0 ");
-//        }
-//        else if(node[idx]==unknown){
-//            printf("X ");
-//        }
-//    }
-//    if(node[n]==one){
-//        printf("1 ");
-//    }
-//    else if(node[n]==zero){
-//        printf("0 ");
-//    }
-//    else if(node[n]==unknown){
-//        printf("X ");
-//    }
-//    printf("\n");
-//
-//    return node[n];
-//}
 
 int ckt::faultsim(int fault)
 {
@@ -457,48 +324,30 @@ int ckt::faultsim(int fault)
     }
 
     ///details
-    printf("======fault sim======\nfault ");
-    for(int idx=1; idx<NNODE; idx++){
-        printf("%c ",idx+96);
-    }
-    printf("\n      ");
-    for(int idx=1; idx<NNODE; idx++){
-        if(node[idx]==one){
-            printf("1 ");
-        }
-        else if(node[idx]==zero){
-            printf("0 ");
-        }
-        else if(node[idx]==unknown){
-            printf("X ");
-        }
-    }
-    printf("\n");
-    printf(" free ");
-    for(int idx=1; idx<NNODE; idx++){
-        printf("%c ",idx+96);
-    }
-    printf("\n      ");
-    for(int idx=1; idx<NNODE; idx++){
-        if(free[idx]==one){
-            printf("1 ");
-        }
-        else if(free[idx]==zero){
-            printf("0 ");
-        }
-        else if(free[idx]==unknown){
-            printf("X ");
-        }
-    }
-    printf("\n");
-    /// I/O only
-//    printf("\nnode ");
-//    for(int idx=1; idx<PI+1; idx++){
+//    printf("======fault sim======\n");
+//    printf(" free ");
+//    for(int idx=1; idx<NNODE; idx++){
 //        printf("%c ",idx+96);
 //    }
-//    printf("z ");
-//    printf("\n     ");
-//    for(int idx=1; idx<PI+1; idx++){
+//    printf("\n      ");
+//    for(int idx=1; idx<NNODE; idx++){
+//        if(free[idx]==one){
+//            printf("1 ");
+//        }
+//        else if(free[idx]==zero){
+//            printf("0 ");
+//        }
+//        else if(free[idx]==unknown){
+//            printf("X ");
+//        }
+//    }
+//    printf("\n");
+//    printf("fault ");
+//    for(int idx=1; idx<NNODE; idx++){
+//        printf("%c ",idx+96);
+//    }
+//    printf("\n      ");
+//    for(int idx=1; idx<NNODE; idx++){
 //        if(node[idx]==one){
 //            printf("1 ");
 //        }
@@ -509,16 +358,35 @@ int ckt::faultsim(int fault)
 //            printf("X ");
 //        }
 //    }
-//    if(node[n]==one){
-//            printf("1 ");
-//    }
-//    else if(node[n]==zero){
-//        printf("0 ");
-//    }
-//    else if(node[n]==unknown){
-//        printf("X ");
-//    }
 //    printf("\n");
+    /// I/O only
+    printf("\nnode ");
+    for(int idx=1; idx<PI+1; idx++){
+        printf("%c ",idx+96);
+    }
+    printf("z ");
+    printf("\n     ");
+    for(int idx=1; idx<PI+1; idx++){
+        if(node[idx]==one){
+            printf("1 ");
+        }
+        else if(node[idx]==zero){
+            printf("0 ");
+        }
+        else if(node[idx]==unknown){
+            printf("X ");
+        }
+    }
+    if(node[n]==one){
+            printf("1 ");
+    }
+    else if(node[n]==zero){
+        printf("0 ");
+    }
+    else if(node[n]==unknown){
+        printf("X ");
+    }
+    printf("\n");
     if(node[n]!=free[n] && node[n]!=unknown && free[n]!=unknown){
         return 1;
     }
@@ -531,13 +399,15 @@ int ckt::faultsim(int fault)
 int main()
 {
     ckt circuit = ckt();
+    ckt circuit2 = ckt();
 
     ///a2 s-a-1
-    circuit.podem();
+    printf("--------a2 s-a-1--------\n");
+    circuit.podem(1);
 
-//    ///d2 s-a-0
-//    circuit.goodsim();
-//    circuit.faultsim(2);
-    //circuit.podem();
+    printf("--------d2 s-a-0--------\n");
+    ///d2 s-a-0
+    circuit2.podem(2);
     return 0;
 }
+

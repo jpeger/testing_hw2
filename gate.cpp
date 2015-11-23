@@ -56,7 +56,7 @@ int nand6(int in1, int in2, int in3, int in4, int in5, int in6)
     int tmp1,tmp2,tmp3,result;
     tmp1 = and2(in1,in2);
     tmp2 = and2(in3,in4);
-    tmp3 = and2(in5,in5);
+    tmp3 = and2(in5,in6);
     result = nand3(tmp1,tmp2,tmp3);
     return result;
 }
